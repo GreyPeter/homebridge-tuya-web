@@ -2,6 +2,7 @@ const SwitchAccessory = require('./lib/switch_accessory');
 const OutletAccessory = require('./lib/outlet_accessory');
 const DimmerAccessory = require('./lib/dimmer_accessory');
 const LightAccessory = require('./lib/light_accessory');
+const DoorAccessory = require('./lib/door_accessory');
 const TuyaWebApi = require('./lib/tuyawebapi');
 
 var Accessory, Service, Characteristic, UUIDGen;
@@ -14,6 +15,7 @@ module.exports = function (homebridge) {
   Service = homebridge.hap.Service;
   Characteristic = homebridge.hap.Characteristic;
   UUIDGen = homebridge.hap.uuid;
+  DoorState = homebridge.hap.Characteristic.CurrentDoorState;
 
   // For platform plugin to be considered as dynamic platform plugin,
   // registerPlatform(pluginName, platformName, constructor, dynamic), dynamic must be true
@@ -120,10 +122,17 @@ class TuyaWebPlatform {
         }
       }
     }
-
+    this.log('Device name = ', device.name);
+    if(device.name == "door") {
+      deviceType = 'door';
+    }
     // Construct new accessory
     let deviceAccessory;
     switch (deviceType) {
+      case 'door':
+        deviceAccessory = new DoorAccessory(this, homebridgeAccessory, device);
+        this.accessories.set(uuid, deviceAccessory.homebridgeAccessory);
+        break;
       case 'light':
         deviceAccessory = new LightAccessory(this, homebridgeAccessory, device);
         this.accessories.set(uuid, deviceAccessory.homebridgeAccessory);
@@ -156,12 +165,12 @@ class TuyaWebPlatform {
     this.log("Configuring cached accessory [%s]", accessory.displayName, accessory.context.deviceId, accessory.UUID);
 
     // Set the accessory to reachable if plugin can currently process the accessory,
-    // otherwise set to false and update the reachability later by invoking 
+    // otherwise set to false and update the reachability later by invoking
     // accessory.updateReachability()
     accessory.reachable = true;
 
     accessory.on('identify', function (paired, callback) {
-      this.log.debug('[IDENTIFY][%s]', accessory.displayName);
+      this.log('[IDENTIFY][%s]', accessory.displayName);
       callback();
     });
 
@@ -181,5 +190,3 @@ class TuyaWebPlatform {
     this.accessories.delete(accessory.uuid);
   }
 }
-
-
