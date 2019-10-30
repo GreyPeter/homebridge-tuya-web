@@ -170,7 +170,7 @@ class TuyaWebPlatform {
     accessory.reachable = true;
 
     accessory.on('identify', function (paired, callback) {
-      this.log('[IDENTIFY][%s]', accessory.displayName);
+      this.log.debug('[IDENTIFY][%s]', accessory.displayName);
       callback();
     });
 
